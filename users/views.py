@@ -3,7 +3,9 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 
 from .models import CustomerAccount
-from .serializers import SendCodeSerializer, VerifyCodeSerializer, UpdateCustomerAccountSerializer
+from .serializers import SendCodeSerializer, VerifyCodeSerializer, UpdateCustomerAccountSerializer, \
+    CustomerAccountSerializer
+from .permissions import IsCustomer
 
 
 class SendCodeView(APIView):
@@ -52,4 +54,27 @@ class UpdateCustomerAccountView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
 
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class CustomerAccountView(APIView):
+    permission_classes = [IsCustomer]
+
+    def get(self, request):
+        account = CustomerAccount.objects.filter(user=request.user).first()
+        if not account:
+            return Response({'error': 'Account not found'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = CustomerAccountSerializer(account)
+        return Response(serializer.data)
+
+    def put(self, request):
+        account = CustomerAccount.objects.filter(user=request.user).first()
+        if not account:
+            return Response({'error': 'Account not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = CustomerAccountSerializer(account, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
