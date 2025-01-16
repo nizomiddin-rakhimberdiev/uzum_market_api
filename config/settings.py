@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'drf_spectacular',
-    'corsheaders'
+    'corsheaders',
+    'delivery',
 ]
 
 MIDDLEWARE = [
@@ -81,14 +82,11 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'uzum_market_api_db',  # Ma'lumotlar bazasi nomi
-        'USER': 'postgres',  # PostgreSQL foydalanuvchisi
-        'PASSWORD': 'root',  # Foydalanuvchi paroli
-        'HOST': 'localhost',  # Ma'lumotlar bazasi serveri (agar mahalliy bo'lsa, localhost)
-        'PORT': '5432',  # PostgreSQL standarti port raqami
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 

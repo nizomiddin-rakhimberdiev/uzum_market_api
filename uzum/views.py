@@ -6,3 +6,5 @@ from django.shortcuts import render
 
 def sadoqat_view(request):
     pass
+
+
