@@ -1,7 +1,9 @@
 from django.db import models
-
 from users.models import Store
+from django.contrib.auth import get_user_model
 
+
+User = get_user_model()
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -45,3 +47,17 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.product.name}"
+
+
+class CartItem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart_items', null=True, blank=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='cart_items')
+    quantity = models.PositiveIntegerField(default=1)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.product.name} ({self.quantity})"
+
+    @property
+    def total_price(self):
+        return self.quantity * self.product.price  # Agar `price` Product modelida bo‘lsa
