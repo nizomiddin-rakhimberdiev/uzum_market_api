@@ -116,4 +116,3 @@ class VerifyCodeSerializer(serializers.Serializer):
             'user_id': user.id,
             'is_new_user': created
         }
-
