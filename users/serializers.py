@@ -15,7 +15,7 @@ User = get_user_model()
 class CustomerAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerAccount
-        fields = ('phone_number', 'first_name', 'last_name','second_name', 'birthdate', 'email', 'gender')
+        fields = ('first_name', 'last_name','second_name', 'birthdate', 'email', 'gender')
 
 
 class UpdateCustomerAccountSerializer(serializers.ModelSerializer):

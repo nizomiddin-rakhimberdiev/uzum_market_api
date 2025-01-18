@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 from django.conf.global_settings import AUTH_USER_MODEL
@@ -43,7 +44,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'drf_spectacular',
-    'corsheaders'
+    'corsheaders',
+    'django_summernote'
 ]
 
 MIDDLEWARE = [
@@ -84,24 +86,43 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'uzum_market_api_db',  # Ma'lumotlar bazasi nomi
+        'NAME': 'uzum_api',  # Ma'lumotlar bazasi nomi
         'USER': 'postgres',  # PostgreSQL foydalanuvchisi
-        'PASSWORD': 'root',  # Foydalanuvchi paroli
+        'PASSWORD': '1234',  # Foydalanuvchi paroli
         'HOST': 'localhost',  # Ma'lumotlar bazasi serveri (agar mahalliy bo'lsa, localhost)
         'PORT': '5432',  # PostgreSQL standarti port raqami
     }
 }
 
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),  # Access token amal qilish muddati - yarim soat
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),     # Refresh token amal qilish muddati - 7 kun
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = ['http://localhost:8000']
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',
-    }
-}
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+#         'LOCATION': 'redis://127.0.0.1:6379/1',
+#     }
+# }
 # CACHES = {
 #     'default': {
 #         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
