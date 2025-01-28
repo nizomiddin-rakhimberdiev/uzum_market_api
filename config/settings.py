@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+from datetime import timedelta
 from pathlib import Path
 
 from django.conf.global_settings import AUTH_USER_MODEL
@@ -103,6 +103,17 @@ CACHES = {
         'LOCATION': 'redis://127.0.0.1:6379/1',
     }
 }
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),  # Access token amal qilish muddati - yarim soat
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),     # Refresh token amal qilish muddati - 7 kun
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
 # CACHES = {
 #     'default': {
 #         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -124,7 +135,7 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Uzum Market API',
     'DESCRIPTION': 'Uzum Market uchun API. Telefon raqam orqali login/register qilish imkoniyati.',
     'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,  # `/schema/` endpointni avtomatik ko‘rsatmaslik
+    'SERVE_INCLUDE_SCHEMA': True,  # `/schema/` endpointni avtomatik ko‘rsatmaslik
     'COMPONENT_SPLIT_REQUEST': True,
     'SCHEMA_PATH_PREFIX': '/api/',  # Faqat `/api/` ostidagi endpointlarni ko‘rsatadi
     'SERVERS': [

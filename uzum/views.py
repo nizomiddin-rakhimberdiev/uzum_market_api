@@ -1,10 +1,15 @@
+from itertools import product
+from statistics import quantiles
 
 from rest_framework import generics
-from .serializers import CategorySerializer, ProductSerializer, CartItemSerializer
-from .models import Category, Product, CartItem
+
+from .permissions import IsSeller
+from .serializers import CategorySerializer, ProductSerializer, CartItemSerializer, OrderSerializer
+from .models import Category, Product, CartItem, OrderItem, Order
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 from rest_framework import status
 
 # Create your views here.
@@ -62,3 +67,56 @@ class CartAPIView(APIView):
             return Response({"message": "Mahsulot savatdan o‘chirildi."}, status=status.HTTP_200_OK)
         except CartItem.DoesNotExist:
             return Response({"error": "Bunday mahsulot savatda topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class CreateOrderAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        cart_items = CartItem.objects.filter(user=user)
+
+        if not cart_items.exists():
+            return Response({"error": "Your cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Total price calculation
+        total_price = sum(item.product.price * item.quantity for item in cart_items)
+
+        # Add user and total price to the request data
+        data = request.data.copy()
+        data['user'] = user.id
+        data['total_price'] = total_price
+
+        # Validate and save the order
+        serializer = OrderSerializer(data=data)
+        if serializer.is_valid():
+            order = serializer.save()  # Save the order
+
+            # Create OrderItem for each cart item
+            for cart_item in cart_items:
+                OrderItem.objects.create(
+                    order=order,
+                    product=cart_item.product,
+                    quantity=cart_item.quantity,
+                    price=cart_item.product.price * cart_item.quantity  # Set the price
+                )
+
+            cart_items.delete()  # Clear the cart
+            return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class OrdersListForSellerView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated, IsSeller]
+    serializer_class = OrderSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.role != 'seller':
+            raise PermissionDenied("You do not have permission to view these orders.")
+        # Faqat sellerga tegishli buyurtmalarni filterlash
+        return Order.objects.filter(
+            items__product__store__seller__user=user
+        ).distinct()

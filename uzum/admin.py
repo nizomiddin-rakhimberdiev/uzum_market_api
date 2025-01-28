@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.db import models
 from django_summernote.widgets import SummernoteWidget
-from uzum.models import Category, ProductImage, Product
+from uzum.models import Category, ProductImage, Product, CartItem, OrderItem, Order
 
 
 
@@ -27,4 +27,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Category, CategoryAdmin)
+admin.site.register(CartItem)
+admin.site.register(OrderItem)
+admin.site.register(Order)
 

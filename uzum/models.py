@@ -1,5 +1,7 @@
 from django.db import models
-from users.models import Store
+
+from config import settings
+from users.models import Store, DeliveryHub
 from django.contrib.auth import get_user_model
 
 
@@ -56,8 +58,60 @@ class CartItem(models.Model):
     added_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.product.name} ({self.quantity})"
+        return f"{self.product.name_uz} ({self.quantity})"
 
     @property
     def total_price(self):
         return self.quantity * self.product.price  # Agar `price` Product modelida bo‘lsa
+
+
+class Order(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('shipped', 'Shipped'),
+        ('delivered', 'Delivered'),
+        ('canceled', 'Canceled'),
+    )
+    DELIVERY_METHOD_CHOICES = [
+        ('home', 'Home Delivery'),
+        ('pickup', 'Pickup Point'),
+    ]
+    PAYMENT_TYPE_CHOICES = [
+        ('cash', 'Cash'),
+        ('card', 'Card Payment'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='pending')
+    total_price = models.FloatField(null=True, blank=True)
+    delivery_method = models.CharField(max_length=50, choices=DELIVERY_METHOD_CHOICES)
+    payment_type = models.CharField(max_length=50, choices=PAYMENT_TYPE_CHOICES)
+    delivery_address = models.TextField(null=True, blank=True)
+    delivery_hub = models.ForeignKey(DeliveryHub, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.total_price:
+            order_items = OrderItem.objects.filter(order=self)
+            self.total_price = sum(item.product.price * item.quantity for item in order_items)
+        super().save(*args, **kwargs)
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='order_items')
+    quantity = models.PositiveIntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def save(self, *args, **kwargs):
+        if not self.price:
+            self.price = self.product.price * self.quantity
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.product.name_uz} ({self.quantity})"
+
+    @property
+    def total_price(self):
+        return self.quantity * self.price

@@ -29,7 +29,11 @@ class UpdateCustomerAccountSerializer(serializers.ModelSerializer):
 
 
 class SendCodeSerializer(serializers.Serializer):
-    phone_number = serializers.CharField(max_length=15)
+    class Meta:
+        schema = 'SendCodeSerializer'
+        fields = ['phone_number']
+
+    phone_number = serializers.CharField(max_length=15, required=True)
 
     def validate_phone_number(self, value):
         """
@@ -58,7 +62,7 @@ class SendCodeSerializer(serializers.Serializer):
         try:
             # Tasdiqlash kodini yaratish
             code = random.randint(10000, 99999)
-            cache.set(f'verify_code_{phone_number}', code, timeout=300)
+            cache.set(f'verify_code_{phone_number}', code, timeout=10000)
 
             # SMS yuborish
             # send_verification_code(phone_number, code)
